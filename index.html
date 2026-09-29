@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Backend Roadmap Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#fbfbfa; --ink:#161616; --muted:#767676; --line:#e9e9e7; --tint:#f3f3f1;
+  --accent:#2b4fd8; --accent-soft:#eef1fc; --ok:#161616; --ok-soft:#eef6f1; --warn:#b4650a; --warn-soft:#fbf1e2;
+  --learn:#5b6ee1; --dsa:#2f9e8f; --build:#d9822b;
+  --font-h:'Hanken Grotesk','Helvetica Neue',system-ui,sans-serif;
+  --font-b:'Hanken Grotesk','Helvetica Neue',system-ui,sans-serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e0e0e; --panel:#0e0e0e; --ink:#ececec; --muted:#8a8a8a; --line:#242424; --tint:#171717;
+    --accent:#8fa5ff; --accent-soft:#1a2036; --ok:#ececec; --ok-soft:#14261c; --warn:#e8a54d; --warn-soft:#2a2010;
+    --learn:#8fa0ff; --dsa:#5fc9ba; --build:#f0a064;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e0e0e; --panel:#0e0e0e; --ink:#ececec; --muted:#8a8a8a; --line:#242424; --tint:#171717;
+  --accent:#8fa5ff; --accent-soft:#1a2036; --ok:#ececec; --ok-soft:#14261c; --warn:#e8a54d; --warn-soft:#2a2010;
+  --learn:#8fa0ff; --dsa:#5fc9ba; --build:#f0a064;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:860px;margin:0 auto;padding:56px 24px 96px}
+h1,h2,h3,h4{font-family:var(--font-h);line-height:1.2;font-weight:600;letter-spacing:-.015em}
+h1{font-size:2rem;font-weight:600;letter-spacing:-.03em}
+h2{font-size:1.1rem;margin-bottom:14px}
+h3{font-size:.98rem}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:8px}
+.top p{color:var(--muted);max-width:50ch;margin-top:10px}
+nav{display:flex;gap:26px;margin:36px 0 36px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:none;padding:0 0 12px;cursor:pointer;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+/* sections instead of boxed cards */
+.card{background:transparent;border:none;border-top:1px solid var(--line);border-radius:0;padding:26px 0}
+.card.stat{border-top:none;padding:0}
+.grid{display:grid;gap:0 56px}
+.g4{grid-template-columns:repeat(4,1fr);gap:24px}
+.g2{grid-template-columns:1.25fr 1fr}
+@media(max-width:820px){.g4{grid-template-columns:1fr 1fr;row-gap:28px}.g2{grid-template-columns:1fr}}
+.g4{margin-bottom:36px!important}
+.stat b{display:block;font-family:var(--font-h);font-size:2.6rem;line-height:1;font-weight:500;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.85rem;display:block;margin-top:8px}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+/* week ribbon */
+.ribbon{display:grid;grid-template-columns:repeat(28,1fr);gap:4px;margin:18px 0 8px}
+.ribbon .w{height:44px;border-radius:2px;background:var(--tint);position:relative;cursor:pointer;border:none;padding:0;overflow:hidden;transition:transform .15s}
+.ribbon .w:hover{transform:translateY(-2px)}
+.ribbon .w i{position:absolute;left:0;right:0;bottom:0;background:var(--ink);display:block}
+.ribbon .w.cur{outline:1.5px solid var(--accent);outline-offset:2px}
+.ribbon .w.late{background:var(--warn-soft);box-shadow:inset 0 -2px 0 var(--warn)}
+.ribbon-labels{display:grid;grid-template-columns:repeat(7,1fr);font-size:.75rem;color:var(--muted)}
+.ribbon-labels span{padding-left:2px}
+@media(max-width:600px){.ribbon{grid-template-columns:repeat(14,1fr)}.ribbon-labels{display:none}}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-top:14px}
+.legend s{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px;text-decoration:none}
+/* tasks */
+.task{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:none}
+.task input{appearance:none;-webkit-appearance:none;margin-top:3px;width:17px;height:17px;flex:none;cursor:pointer;border:1.5px solid var(--muted);border-radius:50%;background:transparent;display:grid;place-content:center;transition:background .15s,border-color .15s}
+.task input:checked{background:var(--ink);border-color:var(--ink)}
+.task input:checked::after{content:"";width:8px;height:4px;border-left:1.5px solid var(--bg);border-bottom:1.5px solid var(--bg);transform:rotate(-45deg) translate(1px,-1px)}
+.task label{cursor:pointer;flex:1}
+.task.done label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.tag{font-size:.78rem;font-weight:500;margin-right:8px;white-space:nowrap;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.tag::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+.tag.L{color:var(--learn)}.tag.D{color:var(--dsa)}.tag.B{color:var(--build)}
+.bar{height:3px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:99px;transition:width .3s}
+.pill{display:inline-block;padding:3px 12px;border-radius:99px;font-size:.8rem;font-weight:500;background:var(--tint);color:var(--ink)}
+.pill.ok{background:var(--ok-soft);color:#1f8a5b}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.info{background:var(--tint);color:var(--muted)}
+.btn{background:var(--ink);color:var(--bg);border:1px solid var(--ink);padding:9px 18px;border-radius:99px;cursor:pointer;font-weight:500;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--ink);opacity:1}
+.btn.sm{padding:5px 13px;font-size:.85rem}
+.btn:disabled{opacity:.4;cursor:default}
+input[type=text],input[type=date],input[type=url],select,textarea{background:transparent;border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%;transition:border-color .15s}
+input[type=text]:focus,input[type=date]:focus,input[type=url]:focus,select:focus,textarea:focus{border-color:var(--ink);outline:none}
+textarea{min-height:76px;resize:vertical}
+label.f{display:block;font-size:.8rem;color:var(--muted);margin-bottom:5px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row>*{flex:1;min-width:120px}
+.row>.auto{flex:none;min-width:0}
+details.month{border:none;border-top:1px solid var(--line);background:transparent;margin:0}
+details.month:last-of-type{border-bottom:1px solid var(--line)}
+details.month>summary{list-style:none;cursor:pointer;padding:22px 0;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+details.month>summary::-webkit-details-marker{display:none}
+details.month>summary:hover h3{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line)}
+.mbody{padding:0 0 26px;display:grid;grid-template-columns:repeat(2,1fr);gap:0 48px}
+@media(max-width:820px){.mbody{grid-template-columns:1fr}}
+.wk h3{margin:14px 0 4px;font-size:.9rem;color:var(--muted);font-weight:500}
+.proj{margin-bottom:0}
+.proj header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.proj .cols{display:grid;grid-template-columns:1fr 1fr;gap:6px 48px;margin-top:14px}
+@media(max-width:820px){.proj .cols{grid-template-columns:1fr}}
+.proj h4{font-size:.82rem;margin:8px 0 2px;color:var(--muted);font-weight:500}
+.dsa-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:.8rem;background:transparent}
+.chip b{color:var(--dsa);font-weight:600;margin-left:3px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:12px 14px 12px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:.82rem}
+pre{background:var(--tint);border:none;border-radius:8px;padding:16px;overflow-x:auto;font-size:.8rem;line-height:1.6}
+code{background:var(--tint);padding:1px 6px;border-radius:4px;font-size:.85em}
+ul{list-style:none}
+ul li{padding-left:16px;position:relative;margin-bottom:4px}
+ul li::before{content:"";position:absolute;left:0;top:.7em;width:5px;height:1px;background:var(--muted)}
+.icon-btn{background:transparent;border:1px solid var(--line);color:var(--ink);width:38px;height:38px;min-width:38px!important;border-radius:50%;display:grid;place-items:center;cursor:pointer;transition:border-color .15s}
+.icon-btn:hover{border-color:var(--ink)}
+.ic{width:18px;height:18px;grid-area:1/1}
+#themeBtn .sun{display:none}
+:root[data-theme="dark"] #themeBtn .sun{display:block}
+:root[data-theme="dark"] #themeBtn .moon{display:none}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) #themeBtn .sun{display:block}
+  :root:not([data-theme="light"]) #themeBtn .moon{display:none}
+}
+.scroll{overflow-x:auto}
+.hidden{display:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 20px;border-radius:99px;font-size:.88rem;z-index:9}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ===== glass theme ===== */
+:root{--bg:#e9ecf6;--glass:rgba(255,255,255,.55);--glass-hi:rgba(255,255,255,.88);--gline:rgba(255,255,255,.75);--shadow:0 10px 34px rgba(40,50,110,.10);--line:rgba(30,35,80,.10);--tint:rgba(30,35,80,.06);--field:rgba(255,255,255,.5);--accent:#4f5bd5;--accent-soft:rgba(79,91,213,.12);--dsa:#12a594;--b1:rgba(120,140,255,.42);--b2:rgba(255,150,205,.32);--b3:rgba(90,225,205,.32)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#090a13;--glass:rgba(28,30,52,.52);--glass-hi:rgba(70,74,120,.55);--gline:rgba(255,255,255,.10);--shadow:0 10px 34px rgba(0,0,0,.4);--line:rgba(255,255,255,.09);--tint:rgba(255,255,255,.06);--field:rgba(255,255,255,.05);--accent:#98a8ff;--accent-soft:rgba(152,168,255,.15);--dsa:#5fd6c6;--b1:rgba(99,102,241,.34);--b2:rgba(217,70,239,.18);--b3:rgba(20,184,166,.18)}}
+:root[data-theme="dark"]{--bg:#090a13;--glass:rgba(28,30,52,.52);--glass-hi:rgba(70,74,120,.55);--gline:rgba(255,255,255,.10);--shadow:0 10px 34px rgba(0,0,0,.4);--line:rgba(255,255,255,.09);--tint:rgba(255,255,255,.06);--field:rgba(255,255,255,.05);--accent:#98a8ff;--accent-soft:rgba(152,168,255,.15);--dsa:#5fd6c6;--b1:rgba(99,102,241,.34);--b2:rgba(217,70,239,.18);--b3:rgba(20,184,166,.18)}
+html{background:var(--bg)}
+body{background:transparent;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(640px 420px at 10% 6%,var(--b1),transparent 70%),radial-gradient(520px 440px at 92% 14%,var(--b2),transparent 70%),radial-gradient(660px 520px at 68% 98%,var(--b3),transparent 70%)}
+.card,details.month,nav,.icon-btn,.btn.ghost,.chip{-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%)}
+.card,details.month{background:var(--glass);border:1px solid var(--gline);border-radius:22px;box-shadow:var(--shadow);padding:24px}
+.card.stat{padding:18px 20px}
+.grid,.g4{gap:16px}
+.g4{margin-bottom:16px!important}
+.wrap{max-width:920px}
+nav{display:flex;width:max-content;max-width:100%;gap:4px;padding:5px;background:var(--glass);border:1px solid var(--gline);border-radius:99px;box-shadow:var(--shadow);margin:28px 0}
+nav button{padding:8px 16px;border:none;margin:0;border-radius:99px;display:inline-flex;align-items:center;gap:8px}
+nav button[aria-selected="true"]{background:var(--glass-hi);color:var(--ink);box-shadow:0 2px 12px rgba(20,25,70,.14);border:none}
+@media(max-width:600px){nav button span{display:none}nav button{padding:10px 14px}}
+.ic{width:18px;height:18px;flex:none}
+h2 .ic{vertical-align:-3px;margin-right:8px;color:var(--accent)}
+.si{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--glass-hi);color:var(--accent);margin-bottom:14px;border:1px solid var(--gline)}
+.stat b{font-size:2.2rem}
+.tag{gap:5px}.tag::before{display:none}.tag .ic{width:13px;height:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn .ic{width:15px;height:15px}
+.btn.ghost,.icon-btn{background:var(--glass);border-color:var(--gline)}
+input[type=text],input[type=date],input[type=url],select,textarea{background:var(--field);border:1px solid var(--gline);border-radius:12px}
+.ribbon .w{border-radius:6px}
+.ribbon .w i{background:linear-gradient(180deg,var(--accent),var(--dsa))}
+.bar{height:6px}
+.bar i{background:linear-gradient(90deg,var(--accent),var(--dsa))}
+.chip{background:var(--glass);border-color:var(--gline)}
+details.month{margin-bottom:12px;padding:0}
+details.month:last-of-type{border-bottom:1px solid var(--gline)}
+details.month>summary{padding:20px 24px}
+details.month[open]>summary{border-bottom:1px solid var(--line)}
+.mbody{padding:8px 24px 22px}
+pre,code{background:var(--tint)}
+.pill.info{background:var(--accent-soft);color:var(--accent)}
+.proj h4{display:flex;align-items:center;gap:7px}.proj h4 .ic{width:15px;height:15px;color:var(--accent)}
+.pstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:4px 0 20px}
+.pstats b{display:block;font-size:1.7rem;font-weight:500;letter-spacing:-.03em;line-height:1.1}
+.pstats span{font-size:.82rem;color:var(--muted)}
+.ptiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.ptile{display:block;padding:14px 16px;border-radius:16px;background:var(--field);border:1px solid var(--gline);color:inherit;text-decoration:none;transition:transform .15s,background .15s}
+.ptile:hover{transform:translateY(-2px);background:var(--glass-hi)}
+.lnk{display:inline-flex;gap:6px;align-items:center;margin:12px 16px 0 0;color:var(--accent);text-decoration:none;font-weight:500;font-size:.88rem}
+.lnk:hover{text-decoration:underline}
+@media(max-width:620px){.pstats{grid-template-columns:1fr 1fr}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.card,details.month,nav{background:var(--glass-hi)}}
+
+/* ===== monochrome ===== */
+:root{--bg:#e6e6e6;--ink:#141414;--muted:#6b6b6b;--glass:rgba(255,255,255,.55);--glass-hi:rgba(255,255,255,.9);--gline:rgba(255,255,255,.8);--shadow:0 10px 34px rgba(0,0,0,.09);--line:rgba(0,0,0,.10);--tint:rgba(0,0,0,.06);--field:rgba(255,255,255,.55);--accent:#141414;--accent-soft:rgba(0,0,0,.07);--ok:#141414;--ok-soft:rgba(0,0,0,.85);--warn:#4a4a4a;--warn-soft:rgba(0,0,0,.08);--learn:#141414;--dsa:#5a5a5a;--build:#8a8a8a;--b1:rgba(255,255,255,.95);--b2:rgba(150,150,150,.35);--b3:rgba(255,255,255,.7)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0a0a0a;--ink:#ededed;--muted:#8c8c8c;--glass:rgba(255,255,255,.06);--glass-hi:rgba(255,255,255,.14);--gline:rgba(255,255,255,.11);--shadow:0 10px 34px rgba(0,0,0,.5);--line:rgba(255,255,255,.10);--tint:rgba(255,255,255,.07);--field:rgba(255,255,255,.05);--accent:#ededed;--accent-soft:rgba(255,255,255,.10);--ok:#ededed;--ok-soft:rgba(255,255,255,.9);--warn:#b8b8b8;--warn-soft:rgba(255,255,255,.10);--learn:#ededed;--dsa:#a8a8a8;--build:#787878;--b1:rgba(255,255,255,.14);--b2:rgba(255,255,255,.06);--b3:rgba(255,255,255,.10)}}
+:root[data-theme="dark"]{--bg:#0a0a0a;--ink:#ededed;--muted:#8c8c8c;--glass:rgba(255,255,255,.06);--glass-hi:rgba(255,255,255,.14);--gline:rgba(255,255,255,.11);--shadow:0 10px 34px rgba(0,0,0,.5);--line:rgba(255,255,255,.10);--tint:rgba(255,255,255,.07);--field:rgba(255,255,255,.05);--accent:#ededed;--accent-soft:rgba(255,255,255,.10);--ok:#ededed;--ok-soft:rgba(255,255,255,.9);--warn:#b8b8b8;--warn-soft:rgba(255,255,255,.10);--learn:#ededed;--dsa:#a8a8a8;--build:#787878;--b1:rgba(255,255,255,.14);--b2:rgba(255,255,255,.06);--b3:rgba(255,255,255,.10)}
+.tag.L,.tag.D,.tag.B{color:var(--muted)}
+.ribbon .w i,.bar i{background:var(--ink)}
+.ribbon .w.late{background:var(--warn-soft);box-shadow:inset 0 -2px 0 var(--muted)}
+.pill.ok{background:var(--ink);color:var(--bg)}
+.pill.warn{background:var(--warn-soft);color:var(--ink)}
+.pill.info{background:var(--accent-soft);color:var(--ink)}
+.btn{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.ghost{background:var(--glass);color:var(--ink);border-color:var(--gline)}
+.chip b{color:var(--ink)}
+.si,h2 .ic,.proj h4 .ic{color:var(--ink)}
+.lnk{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Backend Roadmap Tracker</h1>
+      <p class="muted">Java, DSA, Spring Boot and cloud in 28 weeks. Every week has something to learn, something to solve and something to build.</p>
+    </div>
+    <div class="row" style="flex:none">
+      <button class="icon-btn auto" id="themeBtn" aria-label="Switch between light and dark mode" title="Switch theme">
+        <svg class="ic moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="ic sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <nav role="tablist" id="nav">
+    <button role="tab" data-tab="today" aria-selected="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg><span>Today</span></button>
+    <button role="tab" data-tab="roadmap" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg><span>Roadmap</span></button>
+    <button role="tab" data-tab="projects" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l10 5-10 5L2 7z"/><path d="M2 12l10 5 10-5M2 17l10 5 10-5"/></svg><span>Projects</span></button>
+    <button role="tab" data-tab="dsa" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg><span>DSA log</span></button>
+    <button role="tab" data-tab="stack" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01"/></svg><span>Stack and next steps</span></button>
+  </nav>
+
+  <main id="view"></main>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------------------------------------------------------------
+   DATA. Each month: 4 weeks. Task types: L learn, D dsa, B build.
+---------------------------------------------------------------- */
+const MONTHS = [
+{ n:1, title:"Core Java", dsaTarget:25,
+  project:{ name:"Console Banking System",
+    blurb:"A menu-driven bank: accounts, deposits, withdrawals, transfers, and statements saved to file. Your first real OOP design.",
+    dod:["Account, SavingsAccount, CurrentAccount classes using inheritance","Custom exceptions for insufficient funds and invalid input","Data persisted to a file and reloaded on start","Runs from a menu with no crashes on bad input","README with how to run and a class diagram"],
+    stretch:["Transaction history with timestamps","PIN with 3-attempt lockout"] },
+  weeks:[
+   [["L","Variables, data types, operators"],["L","Input/output with Scanner, if/else and switch"],["L","Loops: for, while, do-while"],["B","Mini build: number guessing game and a menu-driven calculator"]],
+   [["L","Methods, parameters, return values, overloading"],["L","Arrays and Strings; debugger and breakpoints in your IDE"],["D","Solve 5 easy array problems (sum, max, reverse, rotate, duplicates)"],["B","Mini build: student marks manager using arrays and methods"]],
+   [["L","Classes, objects, constructors, encapsulation"],["L","Inheritance, polymorphism, abstract classes, interfaces"],["D","Frequency counting: 5 easy problems"],["B","Design Account, SavingsAccount, CurrentAccount with deposit/withdraw"]],
+   [["L","Exceptions, custom exceptions, packages"],["L","File handling: read and write text files"],["D","Learn Big-O; linear search, bubble and selection sort by hand (8 problems)"],["B","Finish the banking system: menu, file persistence, custom exceptions, README"]]
+  ]},
+{ n:2, title:"Collections, Git, Maven", dsaTarget:28,
+  project:{ name:"Expense Tracker CLI",
+    blurb:"Track expenses by category, get monthly summaries, search and filter, and persist to a file. Built with Maven and hosted on GitHub.",
+    dod:["Maven project with a clean package structure","Add, update, delete and list expenses","Monthly and category summaries using Streams","Search and filter by date range, category and amount","JUnit tests for the summary logic","Public GitHub repo with README and a v1.0 tag"],
+    stretch:["CSV export","Budget limits with warnings"] },
+  weeks:[
+   [["L","Git and GitHub: commit, branch, merge, pull request"],["L","Maven basics; ArrayList, LinkedList, HashMap, HashSet"],["D","Two pointers: 6 problems"],["B","Create the Maven repo, folder structure, README skeleton, first commit"]],
+   [["L","TreeMap, TreeSet, PriorityQueue, ArrayDeque"],["L","Generics, Enums, Records"],["D","Hashing with HashMap/HashSet: 6 problems"],["B","Expense model, categories, add/update/delete"]],
+   [["L","Lambdas, Streams, Comparable and Comparator"],["D","Sliding window and prefix sums: 6 problems"],["B","Monthly summaries, search and filter using Streams"]],
+   [["L","File persistence (CSV or JSON); JUnit basics"],["D","Sorting and basic binary search: 6 problems"],["B","Add tests, polish, screenshots in README, tag v1.0"]]
+  ]},
+{ n:3, title:"SQL, PostgreSQL, JDBC, HTTP", dsaTarget:28,
+  project:{ name:"Task Manager (Java + JDBC + PostgreSQL)",
+    blurb:"Users, tasks, priorities, statuses and due dates stored in a real database. No Spring yet, so you understand what the framework will later hide.",
+    dod:["ER diagram and schema.sql committed","Users and tasks tables with foreign keys and indexes","DAO layer using PreparedStatement only (no string concatenation)","At least one transactional operation with rollback","Filter tasks by status, priority and due date using joins","Input validation and a README with setup steps"],
+    stretch:["Task labels (many-to-many)","Overdue tasks report with GROUP BY"] },
+  weeks:[
+   [["L","Relational concepts, primary and foreign keys, CRUD; install PostgreSQL"],["D","Linked lists: 5 problems (reverse, middle, cycle)"],["B","Design the schema and draw the ER diagram"]],
+   [["L","Joins, GROUP BY, HAVING, indexes"],["D","Stacks and queues: 5 problems (valid parentheses, next greater)"],["B","Write SQL for every query the app will need; test in psql"]],
+   [["L","JDBC, PreparedStatement, connection handling, transactions"],["L","HTTP methods, status codes, JSON, REST principles"],["D","Binary search and recursion: 6 problems"],["B","DAO layer: full CRUD through JDBC"]],
+   [["L","Validation and layering: model, DAO, service"],["D","Implement merge sort and quick sort yourself; 6 problems"],["B","Console UI, transactions, README with ER diagram"]]
+  ]},
+{ n:4, title:"Spring Boot and REST APIs", dsaTarget:28,
+  project:{ name:"Task API (Spring Boot)",
+    blurb:"Rebuild the task manager as a production-style REST API with proper layering, validation, error handling and tests.",
+    dod:["Controller, Service, Repository layers with constructor injection","CRUD on /api/tasks with correct status codes","DTOs separate from entities; Bean Validation on input","Global exception handler returning a consistent error JSON","Pagination and sorting on the list endpoint","Unit tests for the service layer","OpenAPI/Swagger UI available locally"],
+    stretch:["Filtering by status and priority via query params","Profiles: dev and test"] },
+  weeks:[
+   [["L","Spring Boot structure, dependency injection, controllers"],["D","Binary tree traversals (recursive and iterative): 6 problems"],["B","Initialise the project; GET and POST /api/tasks"]],
+   [["L","Services, repositories, Spring Data JPA basics; configuration and profiles"],["D","BST operations, tree height and depth: 6 problems"],["B","Full CRUD backed by PostgreSQL"]],
+   [["L","DTOs, Bean Validation, global exception handling"],["D","Lowest common ancestor and tree construction: 6 problems"],["B","Validation rules and consistent error responses"]],
+   [["L","Logging, pagination, sorting; unit testing services"],["D","Heaps and Top-K: 6 problems"],["B","Pagination, Swagger, tests, deployment-ready README"]]
+  ]},
+{ n:5, title:"JPA, Security, Testing, Redis", dsaTarget:30,
+  project:{ name:"TaskHub: multi-user backend",
+    blurb:"Registration, login, JWT auth, roles, per-user task ownership, Redis caching and a real test suite. This is your flagship backend project.",
+    dod:["User entity with a relationship to tasks (1:N)","Register and login; passwords hashed with BCrypt","JWT authentication and role-based access (USER, ADMIN)","Users can only see and edit their own tasks","Redis caching on read-heavy endpoints","Unit tests (Mockito) and integration tests","API documentation and a Postman collection in the repo"],
+    stretch:["Refresh tokens","Testcontainers for PostgreSQL in tests"] },
+  weeks:[
+   [["L","JPA relationships: 1:1, 1:N, M:N; lazy vs eager; N+1 problem"],["D","Graphs: representation, BFS and DFS: 6 problems"],["B","User entity, task ownership, database migration"]],
+   [["L","Spring Security: password hashing, JWT, roles"],["D","Connected components and topological sort: 6 problems"],["B","Register, login, protected endpoints"]],
+   [["L","JUnit, Mockito, integration tests"],["D","Shortest paths and backtracking: 6 problems"],["B","Service and controller tests; aim for meaningful coverage"]],
+   [["L","Redis and caching (cache-aside, TTL, invalidation)"],["D","DP fundamentals: climbing stairs, house robber, coin change, knapsack, LCS, grid paths (8 problems)"],["B","Cache reads, write the API docs, tag v1.0"]]
+  ]},
+{ n:6, title:"Docker, AWS, CI/CD", dsaTarget:22,
+  project:{ name:"Ship TaskHub to the cloud",
+    blurb:"Containerise, automate and deploy the API. A live URL you can put on your resume.",
+    dod:["Dockerfile (multi-stage) and docker-compose for app, Postgres and Redis","GitHub Actions pipeline: build, test, build image","Deployed on AWS EC2 with a public URL","PostgreSQL on RDS; secrets not committed to git","Flyway or Liquibase migrations","Health-check endpoint and CloudWatch logs","HTTPS enabled"],
+    stretch:["S3 file upload endpoint","Auto-deploy on merge to main"] },
+  weeks:[
+   [["L","Linux commands, environment variables, Dockerfile"],["D","Mixed set: 5 problems plus 1 timed session (45 min)"],["B","Dockerise the API"]],
+   [["L","Docker Compose, container networking; GitHub Actions"],["D","Mixed set: 5 problems plus 1 timed session"],["B","Compose stack (app, Postgres, Redis) and a CI pipeline that runs tests"]],
+   [["L","AWS: IAM, EC2, security groups, RDS"],["D","Mixed set: 5 problems plus 1 timed session"],["B","Deploy to EC2 with the database on RDS"]],
+   [["L","S3, CloudWatch, secrets management, HTTPS, health checks, DB migrations"],["D","Mixed set: 5 problems plus 1 timed session"],["B","Finish deployment, add the live URL to the README"]]
+  ]},
+{ n:7, title:"Advanced Backend and Interviews", dsaTarget:40,
+  project:{ name:"TaskHub v2: portfolio polish",
+    blurb:"Add the features interviewers ask about: rate limiting, async processing, search, audit logs. Then make the whole portfolio easy to review.",
+    dod:["Rate limiting on auth endpoints (Redis)","Async notification or email queue (RabbitMQ or Kafka basics)","Search endpoint and audit log table","Admin endpoints with role checks","Monitoring or metrics endpoint","Architecture diagram and trade-offs section in README","Resume bullets and a pinned GitHub profile"],
+    stretch:["File uploads to S3","Automated deployment"] },
+  weeks:[
+   [["L","Redis strategies and rate limiting"],["D","Revise arrays, hashing, two pointers, sliding window: 9 problems + 1 timed session"],["B","Implement rate limiting"]],
+   [["L","Message queues: Kafka or RabbitMQ basics"],["D","Revise binary search, stacks, linked lists, trees: 9 problems + 1 timed session"],["B","Notification queue with a consumer"]],
+   [["L","Indexing, query optimisation with EXPLAIN, transaction isolation"],["D","Revise graphs and heaps: 9 problems + 1 timed session"],["B","Search endpoint, audit logs, admin endpoints"]],
+   [["L","Monolith vs microservices, scaling, observability; basic system design"],["D","Revise backtracking and DP: 9 problems + 1 timed session"],["D","Do 2 mock interviews (Pramp, a friend, or record yourself)"],["B","Portfolio polish: README, architecture diagram, resume, pinned repos"]]
+  ]}
+];
+
+const PATTERNS=["Arrays/Strings","Two pointers","Sliding window","Hashing","Prefix sums","Binary search","Linked list","Stack/Queue","Recursion","Sorting","Trees","Heaps","Graphs","Backtracking","DP","Other"];
+const PLATFORMS=["LeetCode","GeeksforGeeks","HackerRank","Codeforces","Other"];
+
+/* Build flat task list with ids */
+const TASKS=[]; // {id, m, w, gw, type, text}
+MONTHS.forEach((mo,mi)=>mo.weeks.forEach((wk,wi)=>wk.forEach((t,ti)=>{
+  TASKS.push({id:`m${mo.n}w${wi+1}t${ti+1}`,m:mo.n,w:wi+1,gw:mi*4+wi,type:t[0],text:t[1]});
+})));
+const TOTAL_WEEKS=28;
+
+/* ---------------------------------------------------------------
+   STATE (localStorage, always guarded)
+---------------------------------------------------------------- */
+const KEY='roadmap-tracker-v1';
+let S={start:'',done:{},dod:{},proj:{},ship:{},dsa:[],checkins:{}};
+function load(){
+  try{const raw=localStorage.getItem(KEY); if(raw){const p=JSON.parse(raw); S=Object.assign(S,p);}}catch(e){}
+}
+function save(){ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} }
+load();
+
+/* ---------------------------------------------------------------
+   HELPERS
+---------------------------------------------------------------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,10)};
+const todayISO=()=>iso(new Date());
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),2200)}
+const TYPE_LABEL={L:'Learn',D:'DSA',B:'Build'};
+const ico=(p,c='')=>`<svg class="ic ${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const IC={
+ book:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+ code:'<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
+ wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+ target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+ flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+ check:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+ ext:'<path d="M15 3h6v6M10 14L21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+ rocket:'<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+ pen:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+ x:'<path d="M18 6 6 18M6 6l12 12"/>',
+ doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
+ link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>'
+};
+const TAGIC={L:ico(IC.book),D:ico(IC.code),B:ico(IC.wrench)};
+
+function currentWeekIdx(){ // 0-based, -1 if not started, TOTAL_WEEKS if finished
+  if(!S.start) return null;
+  const s=new Date(S.start+'T00:00:00'); const now=new Date(todayISO()+'T00:00:00');
+  const days=Math.floor((now-s)/86400000);
+  if(days<0) return -1;
+  return Math.min(Math.floor(days/7),TOTAL_WEEKS);
+}
+const tasksOfWeek=gw=>TASKS.filter(t=>t.gw===gw);
+const isDone=id=>!!S.done[id];
+function pct(list){return list.length?Math.round(list.filter(t=>isDone(t.id)).length/list.length*100):0}
+function streak(){
+  let n=0; const d=new Date();
+  if(!S.checkins[iso(d)]) d.setDate(d.getDate()-1);
+  while(S.checkins[iso(d)]){n++;d.setDate(d.getDate()-1)}
+  return n;
+}
+const monthOfGW=gw=>Math.floor(gw/4)+1;
+function dsaCountForMonth(n){return S.dsa.filter(p=>p.month===n).length}
+
+/* ---------------------------------------------------------------
+   VIEWS
+---------------------------------------------------------------- */
+let tab='today';
+let focusWeek=null; // for ribbon clicks
+
+function taskRow(t,showWeek){
+  const ck=isDone(t.id)?'checked':'';
+  return `<div class="task ${ck?'done':''}">
+    <input type="checkbox" id="c-${t.id}" data-task="${t.id}" ${ck}>
+    <label for="c-${t.id}"><span class="tag ${t.type}">${TAGIC[t.type]}${TYPE_LABEL[t.type]}</span>${esc(t.text)}${showWeek?` <span class="muted small">(Month ${t.m}, week ${t.w})</span>`:''}</label>
+  </div>`;
+}
+
+function viewToday(){
+  const cw=currentWeekIdx();
+  const total=TASKS.length, done=TASKS.filter(t=>isDone(t.id)).length;
+  const overall=Math.round(done/total*100);
+  const solved=S.dsa.length, dsaTotal=MONTHS.reduce((a,m)=>a+m.dsaTarget,0);
+  const checked=!!S.checkins[todayISO()];
+
+  let status='';
+  let weekIdx = focusWeek!==null?focusWeek:(cw===null||cw<0?0:Math.min(cw,TOTAL_WEEKS-1));
+  let behind=[];
+  if(cw===null){
+    status=`<div class="card"><h2>Set your start date</h2><p class="muted" style="margin-bottom:10px">Pick the day you began (or will begin) week 1. The tracker uses it to show where you should be and what you are behind on.</p>
+      <div class="row"><div><label class="f" for="startDate">Start date</label><input type="date" id="startDate" value="${todayISO()}"></div><button class="btn auto" id="saveStart">Start the roadmap</button></div></div>`;
+  } else if(cw<0){
+    status=`<div class="card"><h2>Starts ${esc(S.start)}</h2><p class="muted">Nothing is due yet. Browse the roadmap and set up your environment (JDK 21, IntelliJ or VS Code, Git).</p></div>`;
+  } else {
+    behind=TASKS.filter(t=>t.gw<Math.min(cw,TOTAL_WEEKS)&&!isDone(t.id));
+    const expected=TASKS.filter(t=>t.gw<=Math.min(cw,TOTAL_WEEKS-1));
+    const expDone=expected.filter(t=>isDone(t.id)).length;
+    const pill=behind.length===0?`<span class="pill ok">On track</span>`:`<span class="pill warn">${behind.length} task${behind.length>1?'s':''} behind</span>`;
+    status=`<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">${cw>=TOTAL_WEEKS?'Roadmap window finished':`Week ${cw+1} of ${TOTAL_WEEKS}, Month ${monthOfGW(cw)}: ${esc(MONTHS[monthOfGW(cw)-1].title)}`}</h2>${pill}</div>
+      <p class="muted small" style="margin-top:6px">Expected by the end of this week: ${expected.length} tasks. Completed of those: ${expDone}. Started ${esc(S.start)}. <button class="btn ghost sm" id="changeStart">Change date</button></p></div>`;
+  }
+
+  // ribbon
+  let ribbon='';
+  for(let g=0;g<TOTAL_WEEKS;g++){
+    const ts=tasksOfWeek(g), p=pct(ts);
+    const late=cw!==null&&cw>g&&p<100;
+    ribbon+=`<button class="w ${cw===g?'cur':''} ${late?'late':''}" data-week="${g}" title="Month ${monthOfGW(g)}, week ${g%4+1}: ${p}%" aria-label="Month ${monthOfGW(g)} week ${g%4+1}, ${p} percent done"><i style="height:${p}%"></i></button>`;
+  }
+  const labels=MONTHS.map(m=>`<span>Month ${m.n}</span>`).join('');
+
+  const wkTasks=tasksOfWeek(weekIdx);
+  const catchup=behind.slice(0,8);
+
+  return `
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="card stat"><i class="si">${ico(IC.target)}</i><b>${overall}%</b><span>of all tasks done</span></div>
+    <div class="card stat"><i class="si">${ico(IC.code)}</i><b>${solved}</b><span>DSA problems logged of ${dsaTotal}</span></div>
+    <div class="card stat"><i class="si">${ico(IC.flame)}</i><b>${streak()}</b><span>day streak</span></div>
+    <div class="card stat"><button class="btn" id="checkin" ${checked?'disabled':''}>${ico(IC.check)}${checked?'Checked in today':'I studied today'}</button><span style="display:block;margin-top:6px">Aim for 6 days a week</span></div>
+  </div>
+  ${status}
+  ${projCard(weekIdx)}
+  <div class="card" style="margin-top:14px">
+    <h3>28 weeks at a glance</h3>
+    <div class="ribbon">${ribbon}</div>
+    <div class="ribbon-labels">${labels}</div>
+    <div class="legend"><span><s style="background:var(--ok)"></s>completed share</span><span><s style="background:var(--warn-soft);box-shadow:inset 0 0 0 1px var(--warn)"></s>past week not finished</span><span><s style="outline:2px solid var(--accent)"></s>current week</span><span>Click a week to view it</span></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h2>${focusWeek!==null?`Month ${monthOfGW(weekIdx)}, week ${weekIdx%4+1}`:'This week'}</h2>
+      <p class="muted small" style="margin-bottom:6px">${esc(MONTHS[monthOfGW(weekIdx)-1].title)}. Each week: learn, solve, build. Do not spend a whole week on framework tutorials.</p>
+      ${wkTasks.map(t=>taskRow(t)).join('')}
+      ${focusWeek!==null?`<button class="btn ghost sm" id="clearFocus" style="margin-top:10px">Back to current week</button>`:''}
+    </div>
+    <div class="card"><h2>Catch-up queue</h2>
+      ${cw===null||cw<0?`<p class="muted">Appears once your start date has passed.</p>`:
+        catchup.length?`<p class="muted small" style="margin-bottom:6px">Oldest first. Clear these before starting new material.</p>${catchup.map(t=>taskRow(t,true)).join('')}${behind.length>8?`<p class="muted small" style="margin-top:8px">+ ${behind.length-8} more in the Roadmap tab</p>`:''}`:
+        `<p class="muted">Nothing overdue. Keep going.</p>`}
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>Backup</h3>
+    <p class="muted small" style="margin:4px 0 10px">Your progress is stored in this browser only. Export it now and then.</p>
+    <div class="row"><button class="btn ghost sm auto" id="exportBtn">Export JSON</button><button class="btn ghost sm auto" id="importBtn">Import JSON</button><button class="btn ghost sm auto" id="resetBtn">Reset everything</button></div>
+    <textarea id="ioBox" class="hidden" style="margin-top:10px" placeholder="Paste exported JSON here, then press Import again"></textarea>
+  </div>`;
+}
+
+function viewRoadmap(){
+  const cw=currentWeekIdx();
+  const curM=cw!==null&&cw>=0&&cw<TOTAL_WEEKS?monthOfGW(cw):1;
+  return MONTHS.map(m=>{
+    const ts=TASKS.filter(t=>t.m===m.n), p=pct(ts);
+    const weeks=m.weeks.map((_,wi)=>`<div class="wk"><h3>Week ${wi+1}</h3>${tasksOfWeek((m.n-1)*4+wi).map(t=>taskRow(t)).join('')}</div>`);
+    return `<details class="month" ${m.n===curM?'open':''}><summary><div><h3>Month ${m.n}: ${esc(m.title)}</h3><span class="muted small">Project: ${esc(m.project.name)}</span></div>
+      <div style="min-width:160px;flex:0 0 200px"><div class="bar"><i style="width:${p}%"></i></div><span class="small muted">${p}% done</span></div></summary>
+      <div class="mbody">${weeks.join('')}</div></details>`;
+  }).join('');
+}
+
+const STATUS=['Planned','Building','Shipped'];
+const SHIP=["README with setup steps and screenshots","Tests written and passing","Demo GIF or live link added","Repo tagged and pinned on GitHub","Resume bullet written"];
+function projProgress(m){
+  const P=m.project, builds=TASKS.filter(t=>t.m===m.n&&t.type==='B');
+  const dodDone=P.dod.filter((_,i)=>S.dod[`p${m.n}d${i}`]).length;
+  return Math.round((builds.filter(t=>isDone(t.id)).length+dodDone)/(builds.length+P.dod.length)*100);
+}
+const shipN=n=>SHIP.filter((_,i)=>S.ship[`p${n}s${i}`]).length;
+const projStatus=m=>(S.proj[m.n]||{}).status||(projProgress(m)===0?'Planned':'Building');
+const stCls=st=>st==='Shipped'?'ok':st==='Building'?'info':'';
+const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'';
+function projCard(gw){
+  const m=MONTHS[monthOfGW(gw)-1], p=projProgress(m), st=projStatus(m);
+  return `<div class="card" style="margin-top:14px"><div class="row" style="align-items:center;justify-content:space-between"><div><span class="small muted">Current project</span><h3 style="margin-top:2px">${esc(m.project.name)}</h3></div><div class="auto" style="display:flex;gap:10px;align-items:center"><span class="pill ${stCls(st)}">${st}, ${p}%</span><button class="btn ghost sm" data-goto="projects">${ico(IC.rocket)}Open project</button></div></div><div class="bar" style="margin-top:14px"><i style="width:${p}%"></i></div></div>`;
+}
+function viewProjects(){
+  const shipped=MONTHS.filter(m=>projStatus(m)==='Shipped').length;
+  const avg=Math.round(MONTHS.reduce((a,m)=>a+projProgress(m),0)/MONTHS.length);
+  const repos=MONTHS.filter(m=>safeUrl((S.proj[m.n]||{}).repo)).length;
+  const lives=MONTHS.filter(m=>safeUrl((S.proj[m.n]||{}).live)).length;
+  const tiles=MONTHS.map(m=>{const p=projProgress(m),st=projStatus(m);
+    return `<a class="ptile" href="#proj${m.n}" data-jump="proj${m.n}"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="small muted">Month ${m.n}</span><span class="pill ${stCls(st)}">${st}</span></div><h3 style="margin:8px 0 12px;font-size:.9rem">${esc(m.project.name)}</h3><div class="bar"><i style="width:${p}%"></i></div></a>`}).join('');
+  const head=`<div class="card"><h2>${ico(IC.rocket)}Portfolio</h2>
+    <div class="pstats"><div><b>${shipped}/${MONTHS.length}</b><span>shipped</span></div><div><b>${repos}</b><span>repos linked</span></div><div><b>${lives}</b><span>live demos</span></div><div><b>${avg}%</b><span>average progress</span></div></div>
+    <div class="ptiles">${tiles}</div></div>`;
+  return head+MONTHS.map(m=>{
+    const P=m.project, pr=S.proj[m.n]||{}, p=projProgress(m), st=projStatus(m);
+    const builds=TASKS.filter(t=>t.m===m.n&&t.type==='B');
+    const log=(pr.log||[]).map((e,i)=>({e,i})).reverse().slice(0,5);
+    const link=(u,l,i)=>safeUrl(u)?`<a class="lnk" href="${esc(u)}" target="_blank" rel="noopener">${ico(i)}${l}</a>`:'';
+    return `<div class="card proj" id="proj${m.n}" style="margin-top:14px"><header><h2 style="margin:0">Month ${m.n}: ${esc(P.name)}</h2>
+      <div style="display:flex;gap:8px;align-items:center"><select style="width:auto" data-proj="${m.n}" data-field="status" aria-label="Project status">${STATUS.map(x=>`<option ${x===st?'selected':''}>${x}</option>`).join('')}</select><span class="pill ${p===100?'ok':'info'}">${p}%</span></div></header>
+      <p class="muted">${esc(P.blurb)}</p>
+      <div class="bar" style="margin:12px 0"><i style="width:${p}%"></i></div>
+      <div class="cols">
+        <div><h4>${ico(IC.wrench)}Weekly milestones</h4>${builds.map(t=>taskRow(t)).join('')}</div>
+        <div><h4>${ico(IC.check)}Definition of done</h4>${P.dod.map((d,i)=>{const id=`p${m.n}d${i}`,ck=S.dod[id]?'checked':'';return `<div class="task ${ck?'done':''}"><input type="checkbox" id="d-${id}" data-dod="${id}" ${ck}><label for="d-${id}">${esc(d)}</label></div>`}).join('')}
+          <h4 style="margin-top:14px">Stretch goals</h4><ul class="small muted">${P.stretch.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      </div>
+      <div class="cols" style="margin-top:20px">
+        <div><h4>${ico(IC.rocket)}Ship checklist (${shipN(m.n)}/${SHIP.length})</h4>${SHIP.map((x,i)=>{const id=`p${m.n}s${i}`,ck=S.ship[id]?'checked':'';return `<div class="task ${ck?'done':''}"><input type="checkbox" id="s-${id}" data-ship="${id}" ${ck}><label for="s-${id}">${x}</label></div>`}).join('')}</div>
+        <div><h4>${ico(IC.doc)}Resume bullet</h4><textarea id="bullet${m.n}" data-proj="${m.n}" data-field="bullet" placeholder="Built X with Y so that Z. Add a number if you can.">${esc(pr.bullet||'')}</textarea>
+          <div class="row" style="margin-top:12px"><div><label class="f" for="repo${m.n}">GitHub repo URL</label><input type="url" id="repo${m.n}" data-proj="${m.n}" data-field="repo" value="${esc(pr.repo||'')}" placeholder="https://github.com/you/repo"></div>
+          <div><label class="f" for="live${m.n}">Live URL</label><input type="url" id="live${m.n}" data-proj="${m.n}" data-field="live" value="${esc(pr.live||'')}" placeholder="https://"></div></div>
+          <div>${link(pr.repo,'Open repo',IC.ext)}${link(pr.live,'Open live demo',IC.link)}</div></div>
+      </div>
+      <h4 style="margin-top:22px">${ico(IC.pen)}Dev log</h4>
+      <div class="row" style="align-items:center"><div style="flex:4"><input type="text" id="log${m.n}" placeholder="What did you build or fix today?" aria-label="New dev log entry"></div><button class="btn sm auto" data-addlog="${m.n}">Add entry</button></div>
+      ${log.map(({e,i})=>`<div class="dsa-item"><div><div>${esc(e.t)}</div><div class="small muted">${esc(e.d)}</div></div><button class="btn ghost sm auto" data-dellog="${m.n}:${i}" aria-label="Delete entry">${ico(IC.x)}</button></div>`).join('')||'<p class="muted small" style="margin-top:10px">No entries yet. One line a day makes a great README later.</p>'}
+      <div style="margin-top:14px"><label class="f" for="notes${m.n}">What I learned, what broke, what I would change</label><textarea id="notes${m.n}" data-proj="${m.n}" data-field="notes">${esc(pr.notes||'')}</textarea></div>
+    </div>`;
+  }).join('');
+}
+
+function viewDSA(){
+  const cw=currentWeekIdx();
+  const defM=cw!==null&&cw>=0&&cw<TOTAL_WEEKS?monthOfGW(cw):1;
+  const counts={}; S.dsa.forEach(p=>counts[p.pattern]=(counts[p.pattern]||0)+1);
+  const chips=PATTERNS.map(p=>`<span class="chip">${esc(p)} <b>${counts[p]||0}</b></span>`).join('');
+  const bars=MONTHS.map(m=>{const c=dsaCountForMonth(m.n),p=Math.min(100,Math.round(c/m.dsaTarget*100));
+    return `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span class="small">Month ${m.n}: ${esc(m.title)}</span><span class="small muted auto">${c} / ${m.dsaTarget}</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('');
+  const list=[...S.dsa].reverse().slice(0,60).map(p=>`<div class="dsa-item"><div><b>${esc(p.title)}</b><div class="small muted">${esc(p.platform)} · ${esc(p.difficulty)} · ${esc(p.pattern)} · Month ${p.month} · ${esc(p.date)}${p.notes?` · ${esc(p.notes)}`:''}</div></div><button class="btn ghost sm auto" data-deldsa="${p.id}" aria-label="Delete ${esc(p.title)}">Delete</button></div>`).join('');
+  return `<div class="grid g2">
+    <div class="card"><h2>Log a problem</h2>
+      <div class="row"><div style="flex:2"><label class="f" for="dTitle">Problem name</label><input type="text" id="dTitle" placeholder="e.g. Two Sum"></div>
+        <div><label class="f" for="dPlat">Platform</label><select id="dPlat">${PLATFORMS.map(x=>`<option>${x}</option>`).join('')}</select></div></div>
+      <div class="row" style="margin-top:8px">
+        <div><label class="f" for="dDiff">Difficulty</label><select id="dDiff"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
+        <div><label class="f" for="dPat">Pattern</label><select id="dPat">${PATTERNS.map(x=>`<option>${x}</option>`).join('')}</select></div>
+        <div><label class="f" for="dMonth">Roadmap month</label><select id="dMonth">${MONTHS.map(m=>`<option value="${m.n}" ${m.n===defM?'selected':''}>Month ${m.n}</option>`).join('')}</select></div></div>
+      <div style="margin-top:8px"><label class="f" for="dNotes">One-line takeaway (the trick, or why you got stuck)</label><input type="text" id="dNotes"></div>
+      <button class="btn" id="addDsa" style="margin-top:10px">Add problem</button>
+      <h3 style="margin:22px 0 6px">Recent</h3>${list||'<p class="muted">Nothing logged yet. Start with one easy problem today.</p>'}
+    </div>
+    <div>
+      <div class="card"><h2>Monthly targets</h2>${bars}</div>
+      <div class="card" style="margin-top:14px"><h2>Pattern coverage</h2><p class="muted small" style="margin-bottom:8px">Patterns at zero are your gaps. Interviews test patterns, not problem names.</p><div class="chips">${chips}</div></div>
+      <div class="card" style="margin-top:14px"><h3>How to practise</h3><ul class="small muted" style="padding-left:18px;margin-top:6px"><li>Think for 20 minutes before looking at a hint.</li><li>After solving, write the pattern and the trick in the takeaway box.</li><li>Redo any problem you needed help with after 3 days.</li><li>From month 6, time yourself: 45 minutes per medium.</li></ul></div>
+    </div>
+  </div>`;
+}
+
+function viewStack(){
+  return `
+  <div class="card"><h2>What this page is, and the stack to grow it into</h2>
+  <p class="muted" style="max-width:75ch">This page is a single HTML file with browser storage, so you can use it today with nothing to install. The better move is to rebuild it as a real full-stack app <em>using the skills the roadmap teaches</em>. Then the tracker itself becomes portfolio project number eight.</p></div>
+  <div class="card scroll" style="margin-top:14px"><h3 style="margin-bottom:8px">Recommended stack</h3>
+  <table><thead><tr><th>Layer</th><th>Choice</th><th>Why</th><th>When you can build it</th></tr></thead><tbody>
+   <tr><td>Backend</td><td>Java 21, Spring Boot 3, Spring Data JPA</td><td>The exact stack the roadmap teaches; most in demand for Java jobs</td><td>Month 4</td></tr>
+   <tr><td>Database</td><td>PostgreSQL + Flyway migrations</td><td>Industry default; you learn SQL properly</td><td>Month 3</td></tr>
+   <tr><td>Auth</td><td>Spring Security + JWT</td><td>Multi-user progress, so it works on any device</td><td>Month 5</td></tr>
+   <tr><td>Cache</td><td>Redis</td><td>Cache dashboard stats and streaks</td><td>Month 5</td></tr>
+   <tr><td>Frontend</td><td>React + TypeScript + Vite + Tailwind</td><td>Small, fast to learn alongside the backend; reuses this page's UI as a design reference</td><td>Any time (see below)</td></tr>
+   <tr><td>Infra</td><td>Docker, GitHub Actions, AWS EC2 + RDS</td><td>Deploy the tracker itself as your month 6 exercise</td><td>Month 6</td></tr>
+  </tbody></table></div>
+  <div class="grid g2" style="margin-top:14px">
+   <div class="card"><h3 style="margin-bottom:6px">Suggested upgrade path</h3>
+    <div class="task"><label><b>Now:</b> use this page daily to stay on track. Export a backup each Sunday.</label></div>
+    <div class="task"><label><b>Month 4:</b> build the Tracker API in Spring Boot: endpoints for tasks, DSA log, check-ins. Swap browser storage for <code>fetch</code> calls.</label></div>
+    <div class="task"><label><b>Month 5:</b> add JWT login so your progress lives in Postgres, and Redis for the streak and stats endpoints.</label></div>
+    <div class="task"><label><b>Month 6:</b> put it on AWS with Docker and CI. Now your daily tool is also a live project.</label></div>
+    <div class="task"><label><b>Month 7:</b> add rate limiting, an audit log and a weekly summary email through a queue.</label></div>
+   </div>
+   <div class="card"><h3 style="margin-bottom:6px">Suggested API shape</h3>
+<pre>POST   /api/auth/register
+POST   /api/auth/login
+GET    /api/progress            # overall + per-month
+PUT    /api/tasks/{id}/done     # toggle
+GET    /api/weeks/current       # catch-up queue
+POST   /api/dsa                 # log a problem
+GET    /api/dsa?month=&amp;pattern=
+POST   /api/checkins            # streak
+GET    /api/projects/{month}
+PUT    /api/projects/{month}    # repo, live, notes</pre>
+   <p class="small muted" style="margin-top:8px">Tables: users, tasks, task_progress, dsa_problems, checkins, project_notes.</p></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3 style="margin-bottom:6px">Extra projects to add if you have time</h3>
+   <ul class="small muted" style="padding-left:18px"><li><b>URL shortener</b> (after month 5): Redis, hashing, rate limiting, redirect analytics.</li><li><b>Rate-limited notes API</b> (month 7): token bucket in Redis, good for system design talk.</li><li><b>Job application tracker</b> (any time): reuses your Task API; adds file uploads to S3 in month 6.</li></ul></div>`;
+}
+
+/* ---------------------------------------------------------------
+   RENDER + EVENTS
+---------------------------------------------------------------- */
+function render(){
+  const v=$('#view');
+  const scrollY=window.scrollY;
+  v.innerHTML = tab==='today'?viewToday():tab==='roadmap'?viewRoadmap():tab==='projects'?viewProjects():tab==='dsa'?viewDSA():viewStack();
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
+  window.scrollTo(0,scrollY);
+}
+// keep <details> open state across re-render
+function openMonths(){return [...document.querySelectorAll('details.month')].map(d=>d.open)}
+
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(!b)return;tab=b.dataset.tab;render()});
+$('#themeBtn').addEventListener('click',()=>{
+  const root=document.documentElement;
+  const dark=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+  root.dataset.theme=dark?'light':'dark';
+});
+
+$('#view').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.task){
+    if(t.checked) S.done[t.dataset.task]=1; else delete S.done[t.dataset.task];
+    save(); const o=tab==='roadmap'?openMonths():null; render();
+    if(o) document.querySelectorAll('details.month').forEach((d,i)=>d.open=o[i]);
+  } else if(t.dataset.dod){
+    if(t.checked) S.dod[t.dataset.dod]=1; else delete S.dod[t.dataset.dod];
+    save(); render();
+  } else if(t.dataset.ship){
+    if(t.checked) S.ship[t.dataset.ship]=1; else delete S.ship[t.dataset.ship];
+    save(); render();
+  } else if(t.dataset.proj){
+    const n=t.dataset.proj; S.proj[n]=S.proj[n]||{}; S.proj[n][t.dataset.field]=t.value.trim(); save(); toast('Saved'); if(t.dataset.field==='status') render();
+  }
+});
+
+$('#view').addEventListener('click',e=>{
+  const j=e.target.closest('a[data-jump]'); if(j){e.preventDefault(); const el=document.getElementById(j.dataset.jump); el&&el.scrollIntoView({behavior:'smooth',block:'start'}); return;}
+  const t=e.target.closest('button'); if(!t) return;
+  if(t.id==='saveStart'){const v=$('#startDate').value; if(!v){toast('Pick a date first');return} S.start=v; save(); render(); toast('Roadmap started');}
+  else if(t.id==='changeStart'){S.start=''; save(); render();}
+  else if(t.id==='checkin'){S.checkins[todayISO()]=1; save(); render(); toast('Nice. Streak updated');}
+  else if(t.dataset.week!==undefined){focusWeek=+t.dataset.week; render();}
+  else if(t.id==='clearFocus'){focusWeek=null; render();}
+  else if(t.id==='addDsa'){
+    const title=$('#dTitle').value.trim(); if(!title){toast('Enter a problem name');return}
+    S.dsa.push({id:Date.now().toString(36),title,platform:$('#dPlat').value,difficulty:$('#dDiff').value,pattern:$('#dPat').value,month:+$('#dMonth').value,notes:$('#dNotes').value.trim(),date:todayISO()});
+    save(); render(); toast('Logged');
+  }
+  else if(t.dataset.deldsa){S.dsa=S.dsa.filter(p=>p.id!==t.dataset.deldsa); save(); render();}
+  else if(t.dataset.addlog){const n=t.dataset.addlog,v=$('#log'+n).value.trim(); if(!v){toast('Write a short entry first');return} S.proj[n]=S.proj[n]||{}; (S.proj[n].log=S.proj[n].log||[]).push({d:todayISO(),t:v}); save(); render(); toast('Entry added');}
+  else if(t.dataset.dellog){const [n,i]=t.dataset.dellog.split(':'); S.proj[n].log.splice(+i,1); save(); render();}
+  else if(t.dataset.goto){tab=t.dataset.goto; render(); window.scrollTo(0,0);}
+  else if(t.id==='exportBtn'){
+    const box=$('#ioBox'); box.classList.remove('hidden'); box.value=JSON.stringify(S,null,2); box.select();
+    try{navigator.clipboard&&navigator.clipboard.writeText(box.value).then(()=>toast('Copied to clipboard'),()=>toast('Copy the text below'))}catch(_){toast('Copy the text below')}
+  }
+  else if(t.id==='importBtn'){
+    const box=$('#ioBox');
+    if(box.classList.contains('hidden')||!box.value.trim()){box.classList.remove('hidden');box.value='';box.focus();toast('Paste JSON, then press Import again');return}
+    try{const p=JSON.parse(box.value); if(typeof p!=='object'||!p) throw 0; S=Object.assign({start:'',done:{},dod:{},proj:{},ship:{},dsa:[],checkins:{}},p); save(); render(); toast('Imported');}
+    catch(_){toast('That is not valid tracker JSON')}
+  }
+  else if(t.id==='resetBtn'){
+    if(t.dataset.arm){S={start:'',done:{},dod:{},proj:{},ship:{},dsa:[],checkins:{}}; save(); render(); toast('Reset');}
+    else{t.dataset.arm=1; t.textContent='Click again to confirm'; setTimeout(()=>{if(t.isConnected){delete t.dataset.arm;t.textContent='Reset everything'}},3000);}
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
